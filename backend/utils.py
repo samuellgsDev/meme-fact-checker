@@ -21,4 +21,3 @@ def resize_image(image_bytes: bytes, max_dimension: int = 1024) -> bytes:
     img_byte_arr = io.BytesIO()
     img.save(img_byte_arr, format='JPEG', quality=85)
     return img_byte_arr.getvalue()
-    
