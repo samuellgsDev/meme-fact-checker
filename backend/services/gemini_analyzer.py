@@ -18,42 +18,58 @@ async def analyze_image_with_gemini(image_bytes: bytes, extracted_text: str) -> 
 
     genai.configure(api_key=api_key)
     
-    # Use the latest flash model
+    # Use gemini-1.5-flash which supports JSON mode
     model = genai.GenerativeModel('gemini-2.5-flash')
 
     prompt = f"""
     Analise esta imagem em busca de sinais de manipulação ou conteúdo enganoso (fake news/memes).
     
-    Texto Extraído (OCR): "{extracted_text}"
+    Também realize um OCR visual avançado para extrair TODO o texto visível na imagem, corrigindo erros que o OCR tradicional possa ter cometido.
     
-    Por favor, forneça uma resposta em JSON com os seguintes campos:
-    - is_manipulated (boolean): true se houver fortes sinais de manipulação.
-    - reasoning (string): Uma breve explicação do porquê (EM PORTUGUÊS).
-    - visual_anomalies (list of strings): Quaisquer artefatos visuais como fontes incompatíveis, pixelização ao redor do texto, photoshop ruim (EM PORTUGUÊS).
-    - text_analysis (string): Análise do conteúdo textual. É inflamatório? Combina com o contexto visual? (EM PORTUGUÊS).
-    - verdict (string): "Provavelmente Autêntico", "Suspeito" ou "Provavelmente Manipulado".
+    Texto do OCR Tradicional (para referência): "{extracted_text}"
     
-    Retorne APENAS JSON válido.
+    Responda APENAS com um objeto JSON válido.
+    
+    Schema do JSON:
+    {{
+        "is_manipulated": boolean,
+        "reasoning": string (Explicação breve em PORTUGUÊS),
+        "visual_anomalies": [string] (Lista de anomalias visuais em PORTUGUÊS),
+        "text_analysis": string (Análise do conteúdo textual em PORTUGUÊS),
+        "verdict": string ("Provavelmente Autêntico", "Suspeito" ou "Provavelmente Manipulado"),
+        "extracted_text": string (Todo o texto extraído da imagem, corrigido e formatado)
+    }}
     """
     
     try:
         image = Image.open(io.BytesIO(image_bytes))
-        # Use async generation to avoid blocking
-        response = await model.generate_content_async([prompt, image])
         
-        # Simple cleanup to ensure we get JSON
-        text_response = response.text.strip()
-        if text_response.startswith("```json"):
-            text_response = text_response[7:-3]
+        # Request JSON response explicitly
+        response = await model.generate_content_async(
+            [prompt, image],
+            generation_config={"response_mime_type": "application/json"}
+        )
         
-        data = json.loads(text_response)
+
+        # Parse JSON response
+        try:
+            data = json.loads(response.text)
+        except json.JSONDecodeError:
+            # Fallback cleanup if strict JSON mode fails or isn't supported by the lib version
+            text_response = response.text.strip()
+            if text_response.startswith("```json"):
+                text_response = text_response[7:-3]
+            elif text_response.startswith("```"):
+                text_response = text_response[3:-3]
+            data = json.loads(text_response)
         
         return GeminiAnalysis(
             is_manipulated=data.get("is_manipulated", False),
             reasoning=data.get("reasoning", "No reasoning provided"),
             visual_anomalies=data.get("visual_anomalies", []),
             text_analysis=data.get("text_analysis", ""),
-            verdict=data.get("verdict", "Unknown")
+            verdict=data.get("verdict", "Unknown"),
+            extracted_text=data.get("extracted_text", extracted_text) # Fallback to original OCR if missing
         )
         
     except Exception as e:
@@ -63,5 +79,6 @@ async def analyze_image_with_gemini(image_bytes: bytes, extracted_text: str) -> 
             reasoning=f"Error during analysis: {str(e)}",
             visual_anomalies=[],
             text_analysis="Error",
-            verdict="Error"
+            verdict="Error",
+            extracted_text=extracted_text
         )

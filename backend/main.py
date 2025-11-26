@@ -32,6 +32,10 @@ async def analyze_meme(file: UploadFile = File(...)):
     # Step 2: Gemini Analysis (Async I/O)
     gemini_result = await analyze_image_with_gemini(resized_contents, ocr_result.text)
     
+    # Update OCR result with the superior text extraction from Gemini if available
+    if gemini_result.extracted_text:
+        ocr_result.text = gemini_result.extracted_text
+    
     return FullAnalysisResponse(
         filename=file.filename,
         ocr_result=ocr_result,

@@ -1,7 +1,7 @@
 from PIL import Image
 import io
 
-def resize_image(image_bytes: bytes, max_dimension: int = 1024) -> bytes:
+def resize_image(image_bytes: bytes, max_dimension: int = 700) -> bytes:
     """
     Resizes an image to a maximum dimension while maintaining aspect ratio.
     """

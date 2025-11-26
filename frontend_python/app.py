@@ -5,7 +5,7 @@ import io
 
 st.set_page_config(page_title="Verificador de Memes", layout="wide")
 
-st.title("🕵️‍♂️ Verificador de Autenticidade de Memes e Prints")
+st.title("Verificador de Autenticidade de Memes e Prints")
 st.markdown("Envie uma imagem para verificar se há manipulação usando OCR e Inteligência Artificial.")
 
 uploaded_file = st.file_uploader("Escolha uma imagem...", type=["jpg", "jpeg", "png"])
@@ -14,7 +14,7 @@ if uploaded_file is not None:
     col1, col2 = st.columns(2)
     
     with col1:
-        st.image(uploaded_file, caption="Imagem Enviada", use_container_width=True)
+        st.image(uploaded_file, caption="Imagem Enviada", width=700)
         
     with col2:
         if st.button("Analisar Imagem"):

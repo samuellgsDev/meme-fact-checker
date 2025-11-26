@@ -14,6 +14,7 @@ class GeminiAnalysis(BaseModel):
     visual_anomalies: List[str]
     text_analysis: str
     verdict: str
+    extracted_text: Optional[str] = None
 
 class FullAnalysisResponse(BaseModel):
     filename: str
