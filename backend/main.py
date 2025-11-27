@@ -23,16 +23,16 @@ async def analyze_meme(file: UploadFile = File(...)):
     
     contents = await file.read()
     
-    # Run CPU-bound resizing in threadpool
+
     resized_contents = await run_in_threadpool(resize_image, contents)
     
-    # Step 1: OCR (CPU-bound, run in threadpool)
+
     ocr_result = await run_in_threadpool(extract_text, resized_contents)
     
-    # Step 2: Gemini Analysis (Async I/O)
+
     gemini_result = await analyze_image_with_gemini(resized_contents, ocr_result.text)
     
-    # Update OCR result with the superior text extraction from Gemini if available
+
     if gemini_result.extracted_text:
         ocr_result.text = gemini_result.extracted_text
     

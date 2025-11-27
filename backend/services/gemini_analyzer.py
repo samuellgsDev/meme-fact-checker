@@ -18,7 +18,7 @@ async def analyze_image_with_gemini(image_bytes: bytes, extracted_text: str) -> 
 
     genai.configure(api_key=api_key)
     
-    # Use gemini-1.5-flash which supports JSON mode
+
     model = genai.GenerativeModel('gemini-2.5-flash')
 
     prompt = f"""
@@ -44,14 +44,14 @@ async def analyze_image_with_gemini(image_bytes: bytes, extracted_text: str) -> 
     try:
         image = Image.open(io.BytesIO(image_bytes))
         
-        # Request JSON response explicitly
+
         response = await model.generate_content_async(
             [prompt, image],
             generation_config={"response_mime_type": "application/json"}
         )
         
 
-        # Parse JSON response
+
         try:
             data = json.loads(response.text)
         except json.JSONDecodeError:
@@ -69,7 +69,7 @@ async def analyze_image_with_gemini(image_bytes: bytes, extracted_text: str) -> 
             visual_anomalies=data.get("visual_anomalies", []),
             text_analysis=data.get("text_analysis", ""),
             verdict=data.get("verdict", "Unknown"),
-            extracted_text=data.get("extracted_text", extracted_text) # Fallback to original OCR if missing
+            extracted_text=data.get("extracted_text", extracted_text)
         )
         
     except Exception as e:

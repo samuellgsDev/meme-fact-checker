@@ -20,24 +20,24 @@ if uploaded_file is not None:
         if st.button("Analisar Imagem"):
             with st.spinner("Analisando..."):
                 try:
-                    # Prepare file for API
+
                     files = {"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
                     response = requests.post("http://localhost:8000/analyze", files=files)
                     
                     if response.status_code == 200:
                         data = response.json()
                         
-                        # Display Verdict
+
                         verdict = data['gemini_analysis']['verdict']
-                        # Adjust logic for Portuguese verdicts
+
                         color = "green" if "Autêntico" in verdict else "red" if "Manipulado" in verdict else "orange"
                         st.markdown(f"### Veredito: :{color}[{verdict}]")
                         
-                        # Display OCR Data
+
                         with st.expander("📝 Extração OCR (Análise de Texto)"):
                             st.write(f"**Texto Extraído:** {data['ocr_result']['text']}")
                         
-                        # Display AI Analysis
+
                         with st.expander("🤖 Análise de IA (Gemini)"):
                             st.write(f"**Raciocínio:** {data['gemini_analysis']['reasoning']}")
                             
@@ -55,4 +55,4 @@ if uploaded_file is not None:
                     st.error(f"Erro de Conexão: {e}. Certifique-se de que o backend está rodando na porta 8000.")
 
 st.markdown("---")
-st.markdown("Construído com FastAPI, Tesseract e Google Gemini.")
+

@@ -7,7 +7,7 @@ def resize_image(image_bytes: bytes, max_dimension: int = 700) -> bytes:
     """
     img = Image.open(io.BytesIO(image_bytes))
     
-    # Convert to RGB if necessary (e.g. for PNGs with transparency)
+
     if img.mode in ('RGBA', 'P'):
         img = img.convert('RGB')
         
